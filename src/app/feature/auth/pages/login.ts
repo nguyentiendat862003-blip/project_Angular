@@ -1,87 +1,105 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import {
-  FormBuilder,
+  FormControl,
   FormGroup,
-  Validators,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { PasswordModule } from 'primeng/password';
-import { CardModule } from 'primeng/card';
+import { AuthStore } from '../store/auth.store';
+import { AsyncPipe } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { AuthStore } from '../store/auth.store';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
     ButtonModule,
     InputTextModule,
-    PasswordModule,
-    CardModule,
-    ToastModule,
+    ReactiveFormsModule,
+    AsyncPipe,
+    ToastModule
   ],
-  template: `
-    <div class="flex items-center justify-center min-h-screen bg-gray-100">
-      <div class="w-full max-w-md">
-        <p-card>
-          <h2 class="text-2xl font-bold text-center mb-6">Đăng nhập</h2>
-
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-              <input
-                type="text"
-                pInputText
-                formControlName="username"
-                class="w-full"
-                placeholder="email@example.com"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
-              <p-password
-                formControlName="password"
-                [toggleMask]="true"
-                [feedback]="false"
-                class="w-full"
-              />
-            </div>
-
-            <button
-              pButton
-              type="submit"
-              label="Đăng nhập"
-              class="w-full"
-              [loading]="(vm$ | async)?.pageLoading?.['isLoading']"
-            ></button>
-          </form>
-        </p-card>
-      </div>
-    </div>
-  `,
-  providers: [AuthStore, MessageService],
+  templateUrl: './login.html',
 })
-export class LoginComponent {
-  private fb = inject(FormBuilder);
-  private store = inject(AuthStore);
+export class Login implements OnInit, OnDestroy {
+  private readonly auStore = inject(AuthStore);
+  private readonly messageService = inject(MessageService);
+  private readonly subscription = new Subscription();
 
-  loginForm: FormGroup = this.fb.group({
-    username: ['', Validators.required],
-    password: ['', Validators.required],
+  readonly vm$ = this.auStore.vm$;
+
+  showPassword = false;
+  hasSubmitted = false;
+
+  // Thông báo hiển thị ngay trong khung form
+  formMessage: { type: 'error' | 'success' | 'warn' | 'info'; text: string } | null = null;
+
+  loginForm: FormGroup = new FormGroup({
+    username: new FormControl('', Validators.required),
+    password: new FormControl('', Validators.required),
   });
 
-  vm$ = this.store.vm$;
+  constructor() {}
 
-  onSubmit(): void {
-    if (this.loginForm.valid) {
-      this.store.login({ payload: this.loginForm.value });
+  ngOnInit(): void {
+    // 1. Khi đăng nhập thành công
+    this.subscription.add(
+      this.auStore.loginInfo$.subscribe((loginInfo: any) => {
+        const token =
+          loginInfo?.token ||
+          loginInfo?.result?.token ||
+          loginInfo?.result?.accessToken ||
+          loginInfo?.accessToken;
+
+        if (this.hasSubmitted && token) {
+          const msg = 'Đăng nhập thành công!';
+          this.formMessage = { type: 'success', text: msg };
+        }
+      })
+    );
+
+    // 2. Khi AuthStore thông báo lỗi
+    this.subscription.add(
+      this.auStore.errorMessage$.subscribe((errMsg) => {
+        if (this.hasSubmitted && errMsg) {
+          this.formMessage = { type: 'error', text: errMsg };
+        }
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  login(): void {
+    this.formMessage = null;
+
+    // 1. Kiểm tra nếu form chưa điền đầy đủ thông tin
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      const msg = 'Vui lòng điền đầy đủ tên đăng nhập và mật khẩu!';
+      this.formMessage = { type: 'warn', text: msg };
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Cảnh báo',
+        detail: msg,
+        life: 3000
+      });
+      return;
     }
+
+    this.hasSubmitted = true;
+
+    // 2. Gọi AuthStore login
+    this.auStore.login({ payload: this.loginForm.value });
   }
 }

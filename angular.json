@@ -31,7 +31,7 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.css"
             ]
           },
           "configurations": {
@@ -65,7 +65,8 @@
               "buildTarget": "project-Angular:build:production"
             },
             "development": {
-              "buildTarget": "project-Angular:build:development"
+              "buildTarget": "project-Angular:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

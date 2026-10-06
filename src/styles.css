@@ -1,0 +1,142 @@
+@import "primeicons/primeicons.css";
+@import "tailwindcss";
+
+/* Dark mode chạy theo class .app-dark trên <html> (do LayoutService thêm/bỏ khi bấm nút) */
+@custom-variant dark (&:where(.app-dark, .app-dark *));
+
+/* ============================================================
+   LAYOUT WEB-APP: Sidebar + Topbar + Nội dung
+   ============================================================ */
+:root {
+  --sidebar-width: 19rem; /* 304px - to, dễ đọc */
+  --sidebar-width-collapsed: 6rem; /* 96px - chỉ còn icon */
+  --topbar-height: 6rem; /* 96px - topbar cao, hiện đại */
+}
+
+html,
+body {
+  min-height: 100%;
+  background-color: var(--bg-body, #f8fafc);
+}
+
+.app-dark,
+.app-dark body {
+  background-color: #020617;
+}
+
+.layout-sidebar {
+  display: block;
+  width: var(--sidebar-width);
+  transition: width 0.25s ease, transform 0.25s ease;
+}
+
+.layout-sidebar.is-collapsed {
+  width: var(--sidebar-width-collapsed);
+}
+
+.layout-topbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: var(--sidebar-width);
+  z-index: 30;
+  height: var(--topbar-height);
+  transition: left 0.25s ease;
+}
+
+.layout-topbar.is-collapsed {
+  left: var(--sidebar-width-collapsed);
+}
+
+.layout-content {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  margin-left: var(--sidebar-width);
+  padding-top: var(--topbar-height);
+  transition: margin-left 0.25s ease;
+}
+
+.layout-content.is-collapsed {
+  margin-left: var(--sidebar-width-collapsed);
+}
+
+/* Sidebar thu gọn: ẩn chữ, căn giữa icon */
+@media (min-width: 992px) {
+  .layout-sidebar.is-collapsed .sidebar-label,
+  .layout-sidebar.is-collapsed .sidebar-section-title,
+  .layout-sidebar.is-collapsed .sidebar-brand-text,
+  .layout-sidebar.is-collapsed .sidebar-footer-text,
+  .layout-sidebar.is-collapsed .sidebar-collapse-label {
+    display: none;
+  }
+
+  .layout-sidebar.is-collapsed .sidebar-item {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .layout-sidebar.is-collapsed .sidebar-brand {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* Mobile: sidebar trượt vào, nội dung không lùi */
+@media (max-width: 991.98px) {
+  .layout-sidebar {
+    transform: translateX(-100%);
+    box-shadow: 0 20px 50px rgb(2 6 23 / 0.35);
+  }
+
+  .layout-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .layout-topbar,
+  .layout-topbar.is-collapsed {
+    left: 0;
+  }
+
+  .layout-content,
+  .layout-content.is-collapsed {
+    margin-left: 0;
+  }
+
+  .layout-backdrop {
+    display: block;
+  }
+}
+
+.layout-backdrop {
+  display: none;
+}
+
+/* Mục menu đang chọn */
+.sidebar-item.is-active {
+  background-image: linear-gradient(135deg, #2563eb, #4f46e5, #7c3aed);
+  color: #fff;
+  box-shadow: 0 14px 30px -12px rgb(79 70 229 / 0.7);
+}
+
+.sidebar-item.is-active i {
+  color: #fff;
+}
+
+/* Thanh cuộn mượt */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(148 163 184 / 0.6) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgb(148 163 184 / 0.6);
+  border-radius: 9999px;
+}

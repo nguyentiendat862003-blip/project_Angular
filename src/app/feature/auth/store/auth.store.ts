@@ -5,13 +5,13 @@ import { AuthApi } from '../../../core/apis/auth.api';
 import { ToastService } from '../../../core/services/toast.service';
 import { LocalStorageService } from '../../../core/services/local-storage.service';
 import { LocalStorageKey } from '../../../shared/models/const.model';
-import { LoginRequest, LoginResponse } from '../../../shared/models/login.model';
+import { LoginRequest } from '../../../shared/models/login.model';
 import { Router } from '@angular/router';
 
 export interface AuthState {
-  loginInfo: LoginResponse | null;
+  loginInfo: any;
   pageLoading: { [key: string]: boolean };
-  dialogVisible: { [key: string]: boolean };
+  errorMessage: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -19,16 +19,16 @@ export class AuthStore extends ComponentStore<AuthState> {
   // ========== SELECTORS ==========
   readonly loginInfo$ = this.select((s) => s.loginInfo);
   readonly pageLoading$ = this.select((s) => s.pageLoading);
-  readonly dialogVisible$ = this.select((s) => s.dialogVisible);
+  readonly errorMessage$ = this.select((s) => s.errorMessage);
 
   readonly vm$ = this.select(
     this.loginInfo$,
     this.pageLoading$,
-    this.dialogVisible$,
-    (loginInfo, pageLoading, dialogVisible) => ({
+    this.errorMessage$,
+    (loginInfo, pageLoading, errorMessage) => ({
       loginInfo,
       pageLoading,
-      dialogVisible,
+      errorMessage,
     })
   );
 
@@ -41,31 +41,74 @@ export class AuthStore extends ComponentStore<AuthState> {
     super({
       loginInfo: null,
       pageLoading: {},
-      dialogVisible: {},
+      errorMessage: null,
     });
   }
 
   // ========== EFFECTS ==========
   readonly login = this.effect<{ payload: LoginRequest }>((loginInfo$) =>
     loginInfo$.pipe(
-      tap(() => this.patchState({ pageLoading: { isLoading: true } })),
+      tap(() =>
+        this.patchState({
+          pageLoading: { isLoading: true },
+          errorMessage: null,
+        })
+      ),
       exhaustMap((loginInfo) =>
         this.authApi.login({ ...loginInfo.payload }).pipe(
           tap({
             next: (res: any) => {
-              this.patchState({ loginInfo: res || null });
-              this.localStorageService.setItem(
-                LocalStorageKey.APP_ACCESS_TOKEN,
-                res.result.token
-              );
-              this.localStorageService.setItem(
-                LocalStorageKey.APP_USER,
-                res.result.user
-              );
-              this.router.navigate(['/home']);
+              // Lấy token linh hoạt từ cấu trúc phản hồi của backend
+              const token =
+                res?.token ||
+                res?.result?.token ||
+                res?.result?.accessToken ||
+                res?.accessToken ||
+                res?.data?.token ||
+                res?.data?.accessToken;
+
+              // Lấy thông tin user
+              const user =
+                res?.sve_member ||
+                res?.result?.user ||
+                res?.user ||
+                res?.result;
+
+              // Kiểm tra lỗi nếu có mã lỗi 4xx/5xx
+              const hasError = (res?.status && res?.status >= 400) || (res?.code && res?.code >= 400);
+
+              if (res && token && !hasError) {
+                // Đăng nhập thành công
+                this.patchState({ loginInfo: res, errorMessage: null });
+                this.localStorageService.setItem(
+                  LocalStorageKey.APP_ACCESS_TOKEN,
+                  token
+                );
+                if (user) {
+                  this.localStorageService.setItem(
+                    LocalStorageKey.APP_USER,
+                    user
+                  );
+                }
+                this.toast.success('Đăng nhập thành công!');
+                // Đăng nhập thành công → vào trang Home
+                this.router.navigate(['/home']);
+              } else {
+                // Đăng nhập thất bại
+                const errorMsg =
+                  res?.message ||
+                  'Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu!';
+                this.patchState({ loginInfo: null, errorMessage: errorMsg });
+                this.toast.error(errorMsg);
+              }
             },
             error: (err) => {
-              this.toast.error(`${err.error.message}`);
+              const errorMsg =
+                err?.error?.message ||
+                err?.message ||
+                'Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu!';
+              this.patchState({ loginInfo: null, errorMessage: errorMsg });
+              this.toast.error(errorMsg);
             },
           }),
           catchError(() => of(null)),
@@ -109,15 +152,5 @@ export class AuthStore extends ComponentStore<AuthState> {
           )
       )
     )
-  );
-
-  // ========== UPDATERS ==========
-  readonly setDialogVisible = this.updater<{ key: string; value: boolean }>(
-    (state, obj) => ({
-      ...state,
-      dialogVisible: {
-        [obj.key]: obj.value,
-      },
-    })
   );
 }

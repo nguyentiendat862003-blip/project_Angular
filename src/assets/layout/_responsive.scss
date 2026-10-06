@@ -1,0 +1,378 @@
+@media screen and (min-width: 1960px) {
+  .layout-main,
+  .landing-wrapper {
+    width: 1504px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+.layout-breadcrumb {
+  position: relative;
+  background: var(--surface-ground);
+  display: flex;
+  align-items: center;
+  height: 4rem;
+
+  @media screen and (min-width: 1960px) {
+    max-width: 1504px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (min-width: 992px) {
+  .layout-wrapper {
+    &.layout-overlay {
+      .layout-main-container {
+        margin-left: 0;
+        padding-left: 2rem;
+      }
+
+      .layout-sidebar {
+        transform: translateX(-100%);
+        left: 0;
+        top: 0;
+        height: 100vh;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border-right: 1px solid var(--surface-border);
+        transition: transform 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99),
+          left 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99);
+        box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.02),
+          0px 0px 2px rgba(0, 0, 0, 0.05), 0px 1px 4px rgba(0, 0, 0, 0.08);
+        .sidebar-header {
+          display: none !important;
+        }
+      }
+
+      &.layout-overlay-active {
+        .layout-sidebar {
+          transform: translateX(0);
+        }
+      }
+    }
+
+    /* NEW REVEAL MODE - Hover-expandable sidebar */
+    &.layout-reveal {
+      .layout-main-container {
+        margin-left: 60px;
+        padding-left: 2rem;
+        transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .layout-topbar-logo-container {
+        display: none !important;
+      }
+
+      .layout-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        width: 60px;
+        border-radius: 0;
+        border-right: 1px solid var(--surface-border);
+        overflow: hidden;
+        z-index: 999;
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.02),
+          0px 0px 2px rgba(0, 0, 0, 0.05), 0px 1px 4px rgba(0, 0, 0, 0.08);
+        padding: 0;
+        /* Collapsed state styles */
+        .sidebar-scroll {
+          flex-grow: 1;
+          max-height: calc(100vh - 5rem);
+          overflow: hidden;
+        }
+        .layout-menu {
+          .layout-root-menuitem {
+            /* Hide root menu text and show three dots */
+            > .layout-menuitem-root-text {
+              display: none;
+            }
+
+            /* Show three dots for main categories */
+            &::before {
+              content: "⋯";
+              display: block;
+              text-align: center;
+              font-size: 1.2rem;
+              color: var(--text-color);
+              margin: 0.75rem 0;
+              font-weight: 700;
+            }
+          }
+
+          ul {
+            a {
+              padding: 0.75rem 0.5rem;
+              justify-content: center;
+
+              .layout-menuitem-icon {
+                margin-right: 0;
+                font-size: 1.1rem;
+              }
+
+              .layout-menuitem-text {
+                display: none;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+              }
+
+              .layout-submenu-toggler {
+                display: none;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+              }
+
+              /* Focus styles for collapsed state */
+              &:focus {
+                background-color: var(--surface-hover);
+              }
+
+              &:hover {
+                background-color: var(--surface-hover);
+              }
+            }
+
+            /* Hide nested levels when collapsed */
+            ul {
+              display: none;
+            }
+          }
+        }
+      }
+      /* Hover state - expand sidebar */
+      &.layout-sidebar-hover {
+        // .layout-main-container {
+        //  margin-left: 320px;
+        //  transition: margin-left 0.3s ease;
+        // }
+
+        .layout-sidebar {
+          width: 260px;
+          padding: 0.5rem 0 0.5rem 1rem;
+
+          .sidebar-scroll {
+            flex-grow: 1;
+            overflow: auto !important;
+            overflow-x: hidden; // disable horizontal scroll
+            min-height: 0;
+          }
+        }
+        .layout-menu {
+          .layout-root-menuitem {
+            /* Show normal root text on hover */
+            > .layout-menuitem-root-text {
+              display: block;
+              font-size: 0.857rem;
+              text-transform: uppercase;
+              font-weight: 700;
+              color: var(--text-color);
+              margin: 0.75rem 0;
+              opacity: 0;
+              animation: fadeInText 0.3s ease 0.1s forwards;
+            }
+
+            /* Hide three dots on hover */
+            &::before {
+              display: none;
+            }
+          }
+
+          ul {
+            a {
+              padding: 0.75rem 1rem;
+              justify-content: flex-start;
+
+              .layout-menuitem-icon {
+                margin-right: 0.5rem;
+                font-size: inherit;
+              }
+
+              .layout-menuitem-text {
+                display: inline;
+                opacity: 0;
+                animation: fadeInText 0.3s ease 0.1s forwards;
+              }
+
+              .layout-submenu-toggler {
+                display: inline;
+                opacity: 0;
+                animation: fadeInText 0.3s ease 0.1s forwards;
+              }
+
+              /* Enhanced focus styles for expanded state */
+              &:focus {
+                background-color: var(--surface-hover);
+              }
+              &:hover {
+                background-color: var(--surface-hover);
+              }
+            }
+
+            /* Show nested levels on hover */
+            ul {
+              display: block;
+
+              li a {
+                margin-left: 1rem;
+                opacity: 0;
+                animation: fadeInText 0.3s ease 0.15s forwards;
+              }
+
+              li li a {
+                margin-left: 2rem;
+                animation: fadeInText 0.3s ease 0.2s forwards;
+              }
+
+              li li li a {
+                margin-left: 2.5rem;
+                animation: fadeInText 0.3s ease 0.25s forwards;
+              }
+
+              li li li li a {
+                margin-left: 3rem;
+                animation: fadeInText 0.3s ease 0.3s forwards;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    &.layout-static {
+      .layout-main-container {
+        margin-left: 22rem;
+      }
+
+      &.layout-static-inactive {
+        .layout-sidebar {
+          transform: translateX(-100%);
+          left: 0;
+        }
+
+        .layout-main-container {
+          margin-left: 0;
+          padding-left: 2rem;
+        }
+      }
+
+      .layout-sidebar {
+        .sidebar-header {
+          display: none !important;
+        }
+      }
+    }
+
+    .layout-mask {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 991px) {
+  .blocked-scroll {
+    overflow: hidden;
+  }
+
+  .layout-wrapper {
+    .layout-main-container {
+      margin-left: 0;
+      padding-left: 2rem;
+    }
+
+    .layout-sidebar {
+      transform: translateX(-100%);
+      left: 0;
+      top: 0;
+      height: 100vh;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      transition: transform 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99),
+        left 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99);
+    }
+
+    .layout-mask {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 998;
+      width: 100%;
+      height: 100%;
+      background-color: var(--maskbg);
+    }
+
+    &.layout-mobile-active {
+      .layout-sidebar {
+        transform: translateX(0);
+      }
+
+      .layout-mask {
+        display: block;
+      }
+    }
+
+    .layout-sidebar {
+      .sidebar-header {
+        display: none !important;
+      }
+    }
+  }
+}
+
+/* Fade in animation for text elements */
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Enhanced focus management for reveal mode */
+.layout-wrapper.layout-reveal .layout-sidebar {
+  /* Ensure sidebar can receive focus */
+  &:focus-within {
+    outline: none;
+  }
+
+  /* Improve keyboard navigation */
+  .layout-menu {
+    ul {
+      a {
+        /* Ensure all menu items are focusable */
+        &:focus {
+          z-index: 1;
+        }
+
+        /* Active route styling in collapsed mode */
+        &.active-route {
+          color: var(--primary-color) !important;
+          .layout-menuitem-icon {
+            color: var(--primary-color-text);
+            font-weight: bolder;
+          }
+        }
+      }
+    }
+  }
+}
+
+/*open mode*/
+.layout-wrapper.layout-reveal.layout-sidebar-hover .layout-sidebar {
+  .layout-menu {
+    ul {
+      a {
+        &.active-route {
+          background-color: var(--surface-card);
+        }
+      }
+    }
+  }
+}
